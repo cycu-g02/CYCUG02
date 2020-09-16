@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'analysis',
     'analysis.templatetags',
+    'captcha',
 ]
 
 CAPTCHA_NOISE_FUNCTIONS = (
