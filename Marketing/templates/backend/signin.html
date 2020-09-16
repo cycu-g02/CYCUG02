@@ -6,7 +6,7 @@
         <meta name="description" content="">
         <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
         <meta name="generator" content="Jekyll v4.0.1">
-        <title>Mechanic Backend-Logon</title>
+        <title>AI.Analysis-Logon</title>
         {% load static %}
         <link rel="canonical" href="https://getbootstrap.com/docs/4.5/examples/sign-in/">
 
@@ -79,6 +79,7 @@
     <body class="text-center">
         <form class="form-signin" action="/signin" method="post">
             {% csrf_token %}
+            <img class="mb-4" src="{% static "images/analysis_logon.png" %}" alt="" width="276" height="50" >
             <label for="username" class="sr-only">Account</label>
             <input type="text" id="username" name="username" class="form-control" placeholder="Account" required autofocus>
             <label for="password" class="sr-only">Password</label>
