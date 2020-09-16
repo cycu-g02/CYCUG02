@@ -1,0 +1,167 @@
+.maskBg{
+    position: absolute;
+    top: 0;
+    background-color: #000;
+    filter:alpha(opacity=80); /* IE */
+    -moz-opacity:0.8; /* Moz   FF */
+    opacity: 0.8; /* 支援CSS3的瀏覽器（FF 1.5也支援）*/
+    display:none ;
+}
+
+/* for parsley 表單驗證 start */
+input.parsley-success,
+select.parsley-success,
+textarea.parsley-success {
+  color: #468847;
+  background-color: #DFF0D8;
+  border: 1px solid #D6E9C6;
+}
+
+input.parsley-error,
+select.parsley-error,
+textarea.parsley-error {
+  color: #B94A48;
+  background-color: #F2DEDE;
+  border: 1px solid #EED3D7;
+}
+
+.parsley-errors-list {
+  margin: 2px 0 3px;
+  padding: 0;
+  list-style-type: none;
+  font-size: 0.9em;
+  line-height: 0.9em;
+  opacity: 0;
+  color: #B94A48;
+
+  transition: all .3s ease-in;
+  -o-transition: all .3s ease-in;
+  -moz-transition: all .3s ease-in;
+  -webkit-transition: all .3s ease-in;
+}
+
+.parsley-errors-list.filled {
+  opacity: 1;
+}
+/* for parsley 表單驗證 end */
+
+/* for bootstrap tab start */
+.project-tab {
+    padding-top: 10%;
+    margin-top: -8%;
+}
+.project-tab #tabs{
+    background: #007b5e;
+    color: #eee;
+}
+.project-tab #tabs h6.section-title{
+    color: #eee;
+}
+.project-tab #tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    color: #0062cc;
+    background-color: transparent;
+    border-color: transparent transparent #f3f3f3;
+    border-bottom: 3px solid !important;
+    font-size: 16px;
+    font-weight: bold;
+}
+.project-tab .nav-link {
+    border: 1px solid transparent;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    color: #0062cc;
+    font-size: 16px;
+    font-weight: 600;
+}
+.project-tab .nav-link:hover {
+    border: none;
+}
+.project-tab thead{
+    background: #f3f3f3;
+    color: #333;
+}
+.project-tab a{
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+}
+/* for bootstrap tab end */
+
+/* upload Image */
+.uploadImg_block{
+    position: relative;//設為相對定位(relative)
+    text-align: center;
+    border: 2px solid black;
+    display: inline-block;
+}
+
+.bi-search, .bi-pencil, .bi-images, .bi-trash, .bi-eye-fill, .bi-eye-slash-fill{
+  cursor:pointer;
+}
+
+/* hot紅色區塊 */
+.delete_icon{
+    position: absolute;//設為絕對定位(absolute)
+    font-weight: bold;
+    top: 0px;
+    right : 0px; //右邊上面都設0，則出現在右上方
+    display: block;
+    text-align: center;
+    cursor:pointer;
+}
+
+.rotation_closed{
+    position: absolute;//設為絕對定位(absolute)
+    font-weight: bold;
+    top: 0px;
+    left : 0px; //右邊上面都設0，則出現在右上方
+    display: block;
+    text-align: center;
+    background-color: mediumvioletred;
+    cursor:pointer;
+}
+
+.rotation_open{
+    position: absolute;//設為絕對定位(absolute)
+    font-weight: bold;
+    top: 0px;
+    left : 0px; //右邊上面都設0，則出現在右上方
+    display: block;
+    text-align: center;
+    background-color: #07de26;
+    cursor:pointer;
+}
+
+/* 拖拉排序(size) */
+.drag-item{
+    list-style-type:none;
+    display:block;
+    padding:5px;
+    border:1px solid #ccc;
+    margin:2px;
+    width:300px;
+    background:#fafafa;
+    color:#444;
+    CURSOR: all-scroll;
+}
+
+.indicator{
+    position:absolute;
+    font-size:9px;
+    width:10px;
+    height:10px;
+    display:none;
+    color:red;
+}
+
+/* search 類型欄位中X圖示,用來清空欄位值 */
+.btn-pos{
+    position:relative;
+    z-index:1;
+    left: -36px;
+    display:none;
+}
+
+
+
+

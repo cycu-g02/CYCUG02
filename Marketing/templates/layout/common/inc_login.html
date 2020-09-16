@@ -1,0 +1,199 @@
+{% load static %}
+<div id="loginDlg" style="display: none">
+    <form id="loginForm" action="login" method="POST">
+    {% csrf_token %}
+        <input type="hidden" id="url" name="url" value="" />
+        <div class="form-group">
+            {{ verificatedForm.email.label_tag }}
+            {{ verificatedForm.email}}
+        </div>
+        <div class="form-group">
+            {{ verificatedForm.cellphone.label_tag }}
+            {{ verificatedForm.cellphone}}
+        </div>
+        <div class="form-group">
+            {{ verificatedForm.pwd.label_tag }}
+            {{ verificatedForm.pwd }}
+        </div>
+        <div class="form-group">
+            {{ verificatedForm.captcha.errors }}
+            {{ verificatedForm.captcha.label_tag }}
+            {{ verificatedForm.captcha }}<a id="reCreateCode" style="cursor:pointer" href="javascript:void('0')">重新產生驗證碼</a>
+
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td><button type="reset" class="btn btn-default pull-left">重置</button></td>
+                    <td width="70%"></td>
+                    <td><button type="button" class="btn btn-primary pull-right" onclick="Login.openRetrievePwdDlg()" >忘記密碼</button></td>
+                    <td width="5%"></td>
+                    <td><button type="submit" class="btn btn-primary pull-right">登入</button></td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+<div id="retrievePwdDlg" style="display: none">
+    <form id="retrievePwdForm" action="retrievePwd" method="POST">
+    {% csrf_token %}
+        <div class="form-group">
+            <label for="email">Email <span>*</span></label>
+            <input type="email" class="form-control" id="email" name="email" maxlength="254" value="" data-parsley-type="email" required>
+        </div>
+        <div class="form-group">
+            <label for="cellphone">Cellphone <span>*</span></label>
+            <input type="text" class="form-control" id="cellphone" name="cellphone" data-parsley-type="digits" minlength="10" maxlength="10" value="" required>
+        </div>
+        <button type="reset" class="btn btn-default pull-left">重置</button></td>
+        <button type="button" class="btn btn-primary pull-right" onclick="Login.retrievePwd()">送出</button>
+    </form>
+</div>
+
+<div id="signUpDlg" style="display: none">
+    <form id="signUpForm" name="signUpForm" method="post">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="first_name">First Name <span>*</span></label>
+                <input type="text" class="form-control" id="first_name" name="first_name" maxlength="60" value="" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="last_name">Last Name <span>*</span></label>
+                <input type="text" class="form-control" id="last_name" name="last_name" maxlength="30" value="" required>
+            </div>
+            <div class="col-12">
+                <div class="cart-fav-box d-flex align-items-center">
+                    <span class="custom-control custom-radio d-block mb-2">
+                        <input type="radio" class="custom-control-input" id="female" name="gender" checked value="0">
+                        <label class="custom-control-label" for="female">Female</label>
+                    </span>
+                    &nbsp;&nbsp;
+                    <span class="custom-control custom-radio d-block mb-2">
+                        <input type="radio" class="custom-control-input" id="man" name="gender" value="1">
+                        <label class="custom-control-label" for="man">Man</label>
+                    </span>
+                </div>
+            </div>
+            <div class="col-12 mb-3">
+                <label for="phone_number">Cellphone <span>*</span></label>
+                <input type="text" class="form-control" id="cellphone" name="cellphone" data-parsley-type="digits" minlength="10" maxlength="10" value="" required>
+            </div>
+            <div class="col-12 mb-4">
+                <label for="email_address">Email <span>*</span></label>
+                <input type="email" class="form-control" id="email" name="email" maxlength="254" value="" data-parsley-type="email" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="first_name">Password <span>*</span></label>
+                <input type="password" class="form-control" id="pwd" name="pwd" maxlength="30" value="" data-parsley-equalto="#pwd1" data-type="password" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="pwd1">Enter Password Again<span>*</span></label>
+                <input type="password" class="form-control" id="pwd1" name="pwd1" maxlength="30" value="" data-parsley-equalto="#pwd" data-type="password" required>
+            </div>
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-primary pull-right" onclick="Login.signUp()">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    var Login = {
+
+        openDlg: function(){
+            $('#loginDlg').find('form[id=loginForm]').get(0).reset();
+            var url = location.href;
+            $('#loginDlg').find('input[id=url]').val(url);
+
+            $('#reCreateCode').click(function () {
+                $.getJSON('login',
+                    function(result){
+                        $('.captcha').attr('src', result.image_url);
+                        $('#id_captcha_0').val(result.key);
+                    });
+            });
+
+            Dialog.openDialog('loginDlg', {title:'Login', height: 460, width: 400});
+        },
+
+        signOut: function(){
+            Dialog.confirm('您即將要離開這個網站', '確定要登出了嗎？',
+                {
+                    confirm: {
+                        text: '確定',
+                        btnClass: 'btn-danger',
+                        action: function (okbtn) {
+                            location.href = '/logout';
+                        }
+                    }
+                }
+            );
+        },
+
+        openSignUpDlg: function(){
+            $('#signUpForm').get(0).reset();
+            Dialog.openDialog('signUpDlg', {title:'Sign Up', height: 510, width: 700});
+        },
+
+        signUp: function(){
+            if($('#signUpForm').parsley().validate()){
+                var spinner = new jQuerySpinner({parentId:'body', duration: 500});
+                spinner.show();
+                var last_name = $('#signUpDlg').find('input[id=last_name]').val();
+                var first_name = $('#signUpDlg').find('input[id=first_name]').val();
+                var gender = Utils.getRadioValue('gender');
+                var cellphone = $('#signUpDlg').find('input[id=cellphone]').val();
+                var email = $('#signUpDlg').find('input[id=email]').val();
+                var pwd = $('#signUpDlg').find('input[id=pwd]').val();
+                var pwd1 = $('#signUpDlg').find('input[id=pwd1]').val();
+                //var address = $('#signUpDlg').find('input[id=street_address]').val() + " " + $('#signUpDlg').find('input[id=street_address2]').val();
+
+                $.post('signup',
+                    {
+                        last_name: last_name, first_name: first_name, gender: gender,
+                        cellphone: cellphone, email: email, pwd: pwd, pwd1: pwd1
+                    },
+                    function(data, status){
+                        if(data.status == 'success'){
+                            $('#signUpDiv').empty();
+                            $('#signInDiv').empty();
+                            $('#signOutDiv').append('<a href="javascript:Login.signOut()"><img src="{% static "css/plugins/essence/img/core-img/user2.png" %}" title="Sign out"></a>');
+                            $('#signOutDiv').show();
+                            Dialog.close('signUpDlg');
+                            Dialog.success(data.message);
+                        }else{
+                            Dialog.warning(data.message);
+                        }
+                    }
+                );
+                spinner.hide();
+            }
+        },
+
+        openRetrievePwdDlg: function(){
+            Dialog.close('loginDlg');
+            $('#retrievePwdForm').get(0).reset();
+            Dialog.openDialog('retrievePwdDlg', {title:'Retrieve Password', height: 300, width: 400});
+        },
+
+        retrievePwd: function(){
+            if($('#retrievePwdForm').parsley().validate()){
+                var cellphone = $('#retrievePwdDlg').find('input[id=cellphone]').val();
+                var email = $('#retrievePwdDlg').find('input[id=email]').val();
+                $.post('retrievePwd', {cellphone: cellphone, email: email},
+                    function(data, status){
+                        if(data.status == 'success'){
+                            Dialog.close('retrievePwdDlg');
+                            Dialog.success(data.message);
+                        }else{
+                            Dialog.warning(data.message);
+                        }
+                    }
+                );
+            }
+        }
+    };
+
+</script>

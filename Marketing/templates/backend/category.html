@@ -1,0 +1,335 @@
+{% extends 'layout/backend/base.html' %}
+{% load static %}
+{% block title %}Category{% endblock %}
+{% block res %}
+    <link rel="stylesheet" href="{% static "css/plugins/jstree/dist/themes/default/style.min.css" %}" />
+    <script src="{% static "js/plugins/jstree/dist/jstree.js" %}"></script>
+    <script type="text/css"></script>
+{% endblock %}
+{% block content %}
+    <form id="searchForm" method="post">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="form-group">
+                <div class="btn-group mr-2">
+                    <input type="search" class="form-control" id="keyword" name="keyword" value="{{ category_name }}" placeholder="類別名稱">&nbsp;
+                    <button class="btn btn-pos" type="button" style="display: none">
+                        <i class="fa fa-times"></i>
+                    </button><!-- X圖示清空搜尋欄位值 -->
+                    <svg id="queryCategory" onclick="Category.search(this)" class="bi bi-search" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <input type="button" class="btn btn-primary" value="新增大類" onclick="Category.openNewDialog()" />
+                <input type="button" class="btn btn-success" value="啟用" onclick="Category.doEnable()" />
+                <input type="button" class="btn btn-danger" value="停用" onclick="Category.doDisable()" />
+            </div>
+        </div>
+    </div>
+    </form>
+    <div id="categoryTree" class="demo"></div>
+
+    <div id="newDlg" style="display:none">
+        <form id="categoryForm" data-parsley-validate method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="name">名稱</label>
+                <input type="text" class="form-control" id="name" name="name" maxlength="30" placeholder="類別名稱" required>
+            </div>
+            <div class="mb-4">
+                <label for="enable">啟用</label>
+                <select class="custom-select d-block w-100" id="enable" name="enable">
+                    <option value="1">YES</option>
+                    <option value="0">NO</option>
+                </select>
+            </div>
+            <input type="button" class="btn btn-success" value="submit" onclick="Category.addRootCategory()" />
+        </form>
+    </div>
+
+{% endblock %}
+{% block run %}
+<script language="JavaScript">
+
+    var Category = {
+
+        search:  function(obj){
+            if($.jstree.reference('#categoryTree') != null)
+                $('#categoryTree').jstree(true).destroy(false);
+
+            $('#categoryTree').append('<img src="{% static "images/loading.gif" %}"/>');
+            var keyword = $(obj).siblings("input[id='keyword']").val();
+            $.ajax({
+                data : {keyword: keyword},
+                type : "POST",
+                dataType : 'json',
+                url : "searchCategory",
+                error : function(data) {
+                    alert("error!");
+                },
+                success : function(data) {
+                    $('#categoryTree').empty();
+                    if(data != null && data.length > 0){
+                        Category.createTree(data);
+                    }
+                    else{
+                       $('#categoryTree').append('<div>沒有符合條件的資料</div>');
+                    }
+                }
+            });
+        },
+
+        openNewDialog: function(){
+            $('#categoryForm').get(0).reset();
+            Dialog.openDialog('newDlg', {title:'新增根類別', width: 300, height: 300});
+        },
+
+        addRootCategory: function(){
+            if($('#categoryForm').parsley().validate()){
+                var spinner = new jQuerySpinner({parentId:'body', duration: 500});
+                spinner.show();
+                var name = $('#newDlg').find('input[id=name]').val();
+                var enable = $('#newDlg').find('select[id=enable]').val();
+                $.post('addRootCategory', {name: name, enable: enable},
+                    function(data, status){
+                        if(data.status == 'success'){
+                            Category.redrawTree();
+                        }else{
+                            Dialog.warning(data.message);
+                        }
+                        Dialog.close('newDlg');
+                    }
+                );
+                spinner.hide();
+            }
+        },
+
+        doEnable: function(){
+            var node = $("#categoryTree").jstree("get_checked").toString();
+            if(node == ''){
+                alert('請選擇想要啟用的項目!');
+            }
+            else{
+                $.post('enableCategory', {id: node},
+                    function(data, status){
+                        if(data.status == 'success'){
+                            Category.redrawTree();
+                        }else{
+                            Dialog.warning(data.message);
+                        }
+                    }
+                );
+            }
+        },
+
+        doDisable: function(){
+            var node = $("#categoryTree").jstree("get_checked").toString();
+            if(node == ''){
+                alert('請選擇想要停用的項目!');
+            }
+            else{
+                Dialog.confirm('停用', '停用時子類別會一同被停用，您確定要停用嗎？',
+                    {
+                        confirm: {
+                            text: '停用',
+                            btnClass: 'btn-danger',
+                            action: function (okbtn) {
+                                $.post('disableCategory', {id: node},
+                                    function(data, status){
+                                        if(data.status == 'success'){
+                                            Category.redrawTree();
+                                        }else{
+                                            Dialog.warning(data.message);
+                                        }
+                                    }
+                                );
+                            }
+                        }
+                    }
+                );
+            }
+        },
+
+        initTree: function(){
+            $.ajax({
+                data : {},
+                type : "POST",
+                dataType : 'json',
+                url : "getAllCategories",
+                error : function(data) {
+                    alert("error!");
+                },
+                success : function(data) {
+                    Category.createTree(data);
+                }
+            });
+        },
+
+        redrawTree: function(){
+            $('#categoryTree').jstree(true).destroy(false);
+            Category.initTree();
+        },
+
+        createTree: function(dataStr){
+            //inline data demo
+            $('#categoryTree').jstree({
+                "core" : {
+                    "animation" : 0,
+                    "check_callback" : true,
+                    "themes" : { "stripes" : true },
+                    "multiple" : false, // 允許多選
+                    "data" : dataStr
+                },
+                "expand_selected_onload" : true, //選中項藍色底顯示
+                "checkbox" : {
+                    // 禁用級聯選中
+                    //'cascade' : 'undetermined' //有三個選項，up, down, undetermined; 使用前需要先禁用three_state
+                    //"keep_selected_style": true
+                    "three_state": false,
+                    "cascade": "none"
+                },
+                "types" : {
+                    "#" : {
+                        "max_children" : 1,
+                        "max_depth" : 3,
+                        "valid_children" : ["root"]
+                    },
+                    "root" : {
+                        "icon" : "/static/3.3.10/assets/images/tree_icon.png",
+                        "valid_children" : ["default"]
+                    },
+                    "default" : {
+                        "valid_children" : ["default","file"]
+                    },
+                    "file" : {
+                        "icon" : "glyphicon glyphicon-file",
+                        "valid_children" : []
+                    }
+                },
+
+                "contextmenu" : {
+                    select_node : true,
+                    show_at_node : true,
+                    items : {
+                        "新增": {
+                            "label"  : "新增",
+                            "icon"   : "glyphicon glyphicon-plus",
+                            "action" : function(data){
+                                            var inst = $.jstree.reference(data.reference),
+                                            obj = inst.get_node(data.reference);
+                                            inst.create_node(obj, {}, "last", function (new_node) {
+                                                try {
+                                                    new_node.text="新增";
+                                                    inst.edit(new_node);
+                                                } catch (ex) {
+                                                    setTimeout(function () { inst.edit(new_node); },0);
+                                                }
+                                            });
+                                        }
+                        },
+                        "修改" : {
+                            "separator_before"	: false,
+                            "separator_after"	: false,
+                            "_disabled"			: false, //(this.check("rename_node", data.reference, this.get_parent(data.reference), "")),
+                            "label"				: "修改",
+                            "shortcut_label"	: 'F2',
+                            "icon"				: "glyphicon glyphicon-leaf",
+                            "action"			: function (data) {
+                                                    var inst = $.jstree.reference(data.reference),
+                                                    obj = inst.get_node(data.reference);
+                                                    //var clickedNodeId = obj.id;//按右鍵點選節點的id
+                                                    inst.edit(obj);
+                                                }
+                        },
+                        "刪除":{
+                            "separator_before"	: false,
+                            "icon"				: false,
+                            "separator_after"	: false,
+                            "_disabled"			: false, //(this.check("delete_node", data.reference, this.get_parent(data.reference), "")),
+                            "label"				: "刪除",
+                            "icon"				:"glyphicon glyphicon-remove",
+                            "action"			: function (data) {
+
+                                                    Dialog.confirm('刪除', '刪除的資料無法再回復，您確定要刪除嗎？',
+                                                        {
+                                                            confirm: {
+                                                                text: '刪除',
+                                                                btnClass: 'btn-danger',
+                                                                action: function (okbtn) {
+                                                                    var inst = $.jstree.reference(data.reference),
+                                                                    obj = inst.get_node(data.reference);
+                                                                    //var clickedNodeId = obj.id;//按右鍵點選節點的id
+                                                                    if(inst.is_selected(obj)) {
+                                                                        inst.delete_node(inst.get_selected());
+                                                                    }
+                                                                    else{
+                                                                        inst.delete_node(obj);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    );
+                                                }
+                        }
+                    }
+                  },
+
+                //"plugins" : [ "contextmenu", "dnd", "wholerow", "types", "state", "checkbox", "search"]
+                "plugins" : [ "contextmenu", "dnd", "wholerow", "types", "state", "checkbox"]
+
+            }).on("rename_node.jstree", function (e, data) {
+                $.ajax({
+                    data : {id: data.node.id, parent_id: data.node.parent, text: data.node.text},
+                    type : "POST",
+                    dataType : 'json',
+                    url : "addCategory",
+                    error : function(data) {
+                        alert("error");
+                    },
+                    success : function(data) {
+                        Category.redrawTree();
+                    }
+                });
+            }).on("delete_node.jstree", function(e, data){
+                $.post('delCategory', {id: data.node.id},
+                    function(data) {
+                        if(data.status != 'success'){
+                            alert(data.message);
+                        }
+                        location.reload();
+                        //Category.redrawTree();
+                    }
+                );
+            });
+        }
+    };
+
+	$(document).on('dnd_start.vakata', function (e, data) {
+		//alert('Started');
+	});
+
+	$(document).on("dnd_stop.vakata", function (e, data) {
+		if(data.data.jstree) {
+            var node = data.data.origin.get_node(data.data.nodes[0]);
+            var parentId = data.event.target.parentNode.id;
+            $.post('alterCategoryParent', {id: node.id, new_parent_id: parentId},
+                function(data) {
+                    if(data.status != 'success'){
+                        alert(data.message);
+                    }
+                    Category.redrawTree();
+                }
+            );
+		}
+	});
+
+	Category.initTree();
+</script>
+{% endblock %}
