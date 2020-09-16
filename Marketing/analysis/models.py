@@ -1,6 +1,16 @@
 from django.db import models
 
 # Create your models here.
+class SiteNote(models.Model):
+    ENABLE = '1'# 預設啟用
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=30)
+    eng_name = models.CharField(max_length=60, null=True)
+    url = models.CharField(max_length=60, null=True)
+    parent_id = models.IntegerField(default=0)
+    enable = models.CharField(max_length=1, default=ENABLE)
+    idx = models.IntegerField(default=99)
+    data_feather = models.CharField(max_length=30, null=True)
 
 class Category(models.Model):
     ENABLE = '1'  # 預設啟用
