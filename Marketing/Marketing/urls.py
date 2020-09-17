@@ -15,7 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from analysis.views.company_view import company
 from analysis.views.category_view import category
+from analysis.views.message_view import message
+from analysis.views.record_view import record
+
 from analysis.views.sys_view import logon, signin, signout
 
 urlpatterns = [
@@ -23,6 +27,9 @@ urlpatterns = [
     path('', logon),
     path('signin', signin),
     path('signout', signout),
+    path('company', company),
     path('category', category),
+    path('message', message),
+    path('record', record),
 
 ]

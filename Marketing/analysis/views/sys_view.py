@@ -26,7 +26,7 @@ def signin(request):
                         arr.append(nos)
                     request.session["site_notes"] = arr
                     users = select_users(2)
-                    return render(request, "index.html", locals())
+                    return render(request, "backend/company.html", locals())
                 #return render(request, "signin.html", locals())
             #return render(request, "signin.html", locals())
         #return render(request, "signin.html", locals())
