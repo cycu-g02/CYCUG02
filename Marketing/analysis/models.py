@@ -26,3 +26,14 @@ class Category(models.Model):
 
     def get_super_parent_id(self):
         return self.super_parent_id
+
+class Member(models.Model):
+    id = models.AutoField(primary_key=True)
+    member_id = models.CharField(max_length=30)
+    picture = models.CharField(max_length=60)
+
+class Login(models.Model):
+    id = models.AutoField(primary_key=True)
+    member_id = models.CharField(max_length=30)
+    ltime = models.DateTimeField(auto_now=True)
+
